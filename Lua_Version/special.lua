@@ -1,4 +1,4 @@
-local _tl_compat; if (tonumber((_VERSION or ''):match('[%d.]*$')) or 0) < 5.3 then local p, m = pcall(require, 'compat53.module'); if p then _tl_compat = m end end; local ipairs = _tl_compat and _tl_compat.ipairs or ipairs; local math = _tl_compat and _tl_compat.math or math; local string = _tl_compat and _tl_compat.string or string; local table = _tl_compat and _tl_compat.table or table; local camera = require('openmw.camera')
+local camera = require('openmw.camera')
 local core = require('openmw.core')
 local input = require('openmw.input')
 local I = require('openmw.interfaces')
@@ -15,7 +15,6 @@ local _ = require('scripts.special.settings')
 
 local rgb = util.color.rgb
 local v2 = util.vector2
-local V2 = util.Vector2
 
 local specials = AdvantagesDisadvantages:new()
 local specialsSkillMultiplier = 1
@@ -37,7 +36,6 @@ local applyElement = nil
 local reputationElement = nil
 
 local settings = storage.playerSection('Settings_special')
-
 
 local function checkSpellExists(abilityId)
    if (core.magic.spells.records)[abilityId] == nil then
@@ -69,7 +67,6 @@ for _, disadvantage in ipairs(disadvantages) do
    checkSpecialAbilitiesExist(disadvantage)
 end
 
-
 local function destroyMainElement()
    if not mainElement then return end
    mainElement:destroy()
@@ -99,8 +96,6 @@ local function destroyReputationElement()
    I.UI.setMode()
 end
 
-
-
 local function skillAdvancementDifficultyFraction()
    local difficulty = math.max(-maxDifficultyPoints, math.min(maxDifficultyPoints, specials:cost()))
    return (difficulty + maxDifficultyPoints) / (maxDifficultyPoints * 2)
@@ -114,20 +109,20 @@ local function updateDifficultyLine()
 end
 
 local function firstColumn()
-   local content = ui.content({})
-   content:add(background({}))
+   local content = ui.content {}
+   content:add(background {})
    content:add(borders(true))
-   content:add(textLines({
+   content:add(textLines {
       lines = { 'ADVANTAGES/DISADVANTAGES' },
       relativeSize = v2(1, 0.08),
-   }))
-   content:add({
+   })
+   content:add {
       template = I.MWUI.templates.horizontalLineThick,
       props = {
          anchor = v2(0, 0.5),
          relativePosition = v2(0, 0.08),
       },
-   })
+   }
    local lines = {}
    for _, advantage in ipairs(specials.advantages) do
       table.insert(lines, advantage.name .. ' [' .. tostring(advantage.cost) .. ' points]')
@@ -136,7 +131,7 @@ local function firstColumn()
       table.insert(lines, disadvantage.name .. ' [' .. tostring(disadvantage.cost) .. ' points]')
    end
    local scrollableTextLine
-   scrollableTextLine = ScrollableTextLines:new({
+   scrollableTextLine = ScrollableTextLines:new {
       lines = lines,
       events = {
          mouseDoubleClick = function(i)
@@ -156,7 +151,7 @@ local function firstColumn()
          relativeSize = v2(0.9, 0.85),
          scrollbarRelativeSizeWidth = 0.05,
       },
-   })
+   }
    content:add(scrollableTextLine:layout())
    return {
       content = content,
@@ -167,86 +162,86 @@ local function firstColumn()
 end
 
 local function secondColumn()
-   local content = ui.content({})
-   content:add(background({}))
+   local content = ui.content {}
+   content:add(background {})
    content:add(borders(true))
-   content:add(textLines({
+   content:add(textLines {
       lines = { 'SKILL', 'ADVANCEMENT', 'FOR CLASS' },
       relativeSize = v2(1, 0.15),
-   }))
-   content:add({
+   })
+   content:add {
       template = I.MWUI.templates.horizontalLineThick,
       props = { relativePosition = v2(0, 0.15) },
-   })
-   content:add({
+   }
+   content:add {
       template = templates.textNormal,
       props = {
          anchor = v2(1, 0),
          relativePosition = v2(0.65, 0.2),
          text = 'DIFFICULT',
       },
-   })
-   content:add({
+   }
+   content:add {
       template = templates.textNormal,
       props = {
          anchor = v2(1, 0.5),
          relativePosition = v2(0.65, 0.575),
          text = 'AVERAGE',
       },
-   })
-   content:add({
+   }
+   content:add {
       template = templates.textNormal,
       props = {
          anchor = v2(1, 1),
          relativePosition = v2(0.65, 0.95),
          text = 'EASY',
       },
-   })
-   content:add({
+   }
+   content:add {
       type = ui.TYPE.Image,
       props = {
          alpha = 0.5,
          color = util.color.hex('910601'),
          relativePosition = v2(0.7, 0.2),
          relativeSize = v2(0.2, 0.15),
-         resource = ui.texture({ path = 'white' }),
+         resource = ui.texture { path = 'white' },
       },
-   })
-   content:add({
+   }
+   content:add {
       type = ui.TYPE.Image,
       props = {
          alpha = 0.5,
          color = util.color.hex('910601'),
          relativePosition = v2(0.7, 0.8),
          relativeSize = v2(0.2, 0.15),
-         resource = ui.texture({ path = 'white' }),
+         resource = ui.texture { path = 'white' },
       },
-   })
-   content:add({
+   }
+   content:add {
       template = templates.textNormal,
       props = {
          anchor = v2(1, 0.5),
          relativePosition = v2(0.65, 0.35),
          text = 'x3.0',
       },
-   })
-   content:add({
+   }
+   content:add {
       template = templates.textNormal,
       props = {
          anchor = v2(1, 0.5),
          relativePosition = v2(0.65, 0.8),
          text = 'x0.3',
       },
-   })
-   content:add({
-      content = ui.content({ borders(true) }),
+   }
+   content:add {
+      content = ui.content { borders(true) },
       props = {
          relativePosition = v2(0.7, 0.2),
          relativeSize = v2(0.2, 0.75),
       },
-   })
+   }
    local lineRelativePosition = 0.2 + 0.75 * (1 - skillAdvancementDifficultyFraction())
-   content:add({
+   content:add {
       name = 'difficulty_line',
       type = ui.TYPE.Image,
       props = {
@@ -254,9 +249,9 @@ local function secondColumn()
          anchor = v2(0, 0.5),
          relativePosition = v2(0.68, lineRelativePosition),
          relativeSize = v2(0.24, 0.01),
-         resource = ui.texture({ path = 'white' }),
+         resource = ui.texture { path = 'white' },
       },
-   })
+   }
    return {
       name = 'second_column',
       content = content,
@@ -267,31 +262,20 @@ local function secondColumn()
    }
 end
 
-
-
-
-
-
 local function changeHitPoints(_)
    ui.showMessage('Changing hit points is not supported yet')
-
-
-
-
-
-
 end
 
 local function hitPoint()
-   local content = ui.content({})
+   local content = ui.content {}
 
-   content:add(background({}))
+   content:add(background {})
    content:add(borders(true))
-   content:add(textLines({
+   content:add(textLines {
       lines = { 'MAX', 'HIT POINTS', 'PER LEVEL' },
       relativePosition = v2(0.1, 0.01),
       relativeSize = v2(0.8, 0.49),
-   }))
+   })
    content:add(TextButton:new({
       lines = { '+' },
       events = {
@@ -314,17 +298,17 @@ local function hitPoint()
          relativeSize = v2(0.1, 0.2),
       },
    }):layout())
-   content:add({
+   content:add {
       name = 'boxedHitPoints',
-      content = ui.content({
+      content = ui.content {
          borders(false),
-         textLines({ lines = { tostring(specials.maxHp) } }),
-      }),
+         textLines { lines = { tostring(specials.maxHp) } },
+      },
       props = {
          relativePosition = v2(0.3, 0.5),
          relativeSize = v2(0.6, 0.4),
       },
-   })
+   }
    return {
       name = 'hitPoints',
       content = content,
@@ -348,7 +332,7 @@ local function createEditElement(availableSpecials, add)
                relativeSize = v2(1, 0),
                size = v2(0, templates.textNormal.props.textSize),
             },
-            content = ui.content({
+            content = ui.content {
                {
                   template = templates.textNormal,
                   name = 'text',
@@ -370,7 +354,7 @@ local function createEditElement(availableSpecials, add)
                      textAlignH = ui.ALIGNMENT.End,
                   },
                },
-            }),
+            },
          },
          group = special.group,
          data = special,
@@ -379,7 +363,7 @@ local function createEditElement(availableSpecials, add)
    local items = group(toGroup)
    local selected = nil
    local scrollable
-   scrollable = ScrollableGroups:new({
+   scrollable = ScrollableGroups:new {
       items = items,
       events = {
          focusGainNonGroup = function(_, item)
@@ -387,8 +371,8 @@ local function createEditElement(availableSpecials, add)
             local special = item.data
             if not special.description then return end
             local tooltip = lookupLayout(editElement.layout, { 'tooltip' })
-            tooltip.content = ui.content({
-               background({}),
+            tooltip.content = ui.content {
+               background {},
                borders(true),
                {
                   template = templates.textNormal,
@@ -401,7 +385,7 @@ local function createEditElement(availableSpecials, add)
                      text = special.description,
                   },
                },
-            })
+            }
             editElement:update()
          end,
          focusLossNonGroup = function(_, _)
@@ -431,16 +415,15 @@ local function createEditElement(availableSpecials, add)
          relativePosition = v2(0.05, 0.05),
          relativeSize = v2(0.9, 0.7),
       },
-   })
+   }
    editElementChangeSelection = function(offset)
-
       local newCurrent = scrollable.scrollable.scrollbar.current + offset
       scrollable.scrollable:setCurrent(newCurrent)
       scrollable:update()
       scrollable.options.events.onChange(newCurrent)
    end
-   local content = ui.content({})
-   content:add(background({}))
+   local content = ui.content {}
+   content:add(background {})
    content:add(borders(true))
    content:add(scrollable:layout())
    content:add(TextButton:new({
@@ -460,9 +443,9 @@ local function createEditElement(availableSpecials, add)
          relativeSize = v2(0.15, 0.15),
       },
    }):layout())
-   editElement = ui.create({
+   editElement = ui.create {
       layer = 'Windows',
-      content = ui.content({
+      content = ui.content {
          {
             content = content,
             props = {
@@ -479,9 +462,9 @@ local function createEditElement(availableSpecials, add)
                relativeSize = v2(0.5, 0.15),
             },
          },
-      }),
+      },
       props = { relativeSize = v2(1, 1) },
-   })
+   }
    I.UI.setMode('Interface', { windows = {} })
 end
 
@@ -526,176 +509,8 @@ end
 local function createReputationElement()
    ui.showMessage('Changing reputation is not yet implemented!')
    return
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+   -- TODO: Reputation editing UI is not yet implemented.
+   -- See the Teal source (special.tl) for the commented-out implementation.
 end
 
 local function editReputationButton()
@@ -730,34 +545,6 @@ I.SkillProgression.addSkillUsedHandler(function(_, params)
    params.skillGain = params.skillGain * multiplier
    return true
 end)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 local function removeExistingSpecials()
    for _, spell in ipairs(types.Actor.spells(self)) do
@@ -804,21 +591,19 @@ local function applySpecials()
 
    specialsSkillMultiplier = calculateSpecialsSkillMultiplier(specials:cost())
    print('Applying specials skill multiplier ' .. tostring(specialsSkillMultiplier))
-
-
 end
 
 local function createApplyElement()
-   local content = ui.content({})
-   content:add(background({}))
+   local content = ui.content {}
+   content:add(background {})
    content:add(borders(true))
-   content:add({
-      content = ui.content({ borders(false) }),
+   content:add {
+      content = ui.content { borders(false) },
       props = {
          relativePosition = v2(0.05, 0.05),
          relativeSize = v2(0.9, 0.5),
       },
-   })
+   }
    local specialsCost = specials:cost()
    local text
    local enableApplyButton
@@ -831,7 +616,7 @@ local function createApplyElement()
       text = 'Do you want to apply the special advantages and disadvantages, exit without applying them or go back to editing?'
       enableApplyButton = true
    end
-   content:add({
+   content:add {
       template = templates.textNormal,
       props = {
          autoSize = false,
@@ -841,7 +626,7 @@ local function createApplyElement()
          relativePosition = v2(0.1, 0.1),
          relativeSize = v2(0.8, 0.4),
       },
-   })
+   }
    if enableApplyButton then
       content:add(TextButton:new({
          lines = { 'APPLY' },
@@ -892,7 +677,7 @@ local function createApplyElement()
          relativeSize = v2(0.2, 0.3),
       },
    }):layout())
-   applyElement = ui.create({
+   applyElement = ui.create {
       layer = 'Windows',
       content = content,
       props = {
@@ -900,7 +685,7 @@ local function createApplyElement()
          relativePosition = v2(0.5, 0.5),
          relativeSize = v2(0.4, 0.3),
       },
-   })
+   }
    I.UI.setMode('Interface', { windows = {} })
 end
 
@@ -925,7 +710,7 @@ local function exitButton()
 end
 
 createMainElement = function()
-   mainElement = ui.create({
+   mainElement = ui.create {
       layer = 'Windows',
       name = 'outer',
       type = ui.TYPE.Widget,
@@ -934,7 +719,7 @@ createMainElement = function()
          relativePosition = v2(0.5, 0.5),
          relativeSize = v2(0.7, 0.8),
       },
-      content = ui.content({
+      content = ui.content {
          firstColumn(),
          secondColumn(),
          hitPoint(),
@@ -942,8 +727,8 @@ createMainElement = function()
          editSpecialDisadvantagesButton(),
          editReputationButton(),
          exitButton(),
-      }),
-   })
+      },
+   }
    I.UI.setMode('Interface', { windows = {} })
 end
 
@@ -969,8 +754,6 @@ local function loadPlayerSpecials()
    end
 end
 
-local testElement = nil
-
 local function onKeyPress(key)
    if not mainElement and input.getKeyName(key.code):lower() == getOpenSpecialMainElementKey():lower() then
       loadPlayerSpecials()
@@ -985,12 +768,12 @@ local function onKeyPress(key)
    elseif editElement and key.code == input.KEY.DownArrow then
       editElementChangeSelection(1)
    elseif editElement and key.code == input.KEY.Enter then
-
+      -- TODO: handle Enter key in edit element
    end
 end
 
 local function onMouseWheel(vertical, _)
-   if not editElement or not onMouseWheel then return end
+   if not editElement then return end
    editElementChangeSelection(-vertical)
 end
 
@@ -1001,11 +784,12 @@ local function applyReputationChanges(dt)
    if applyReputationChangesLastRun < applyReputationChangesEvery then return end
    applyReputationChangesLastRun = 0
    for _, actor in ipairs(nearby.actors) do
-      if not types.NPC.objectIsInstance(actor) then return end
-      for _, factionId in ipairs(types.NPC.getFactions(actor)) do
-         if specials.reputation[factionId] then
-            actor:sendEvent('SpecialModifyDisposition', { toward = self.id, modifier = specials.reputation[factionId] })
-            break
+      if types.NPC.objectIsInstance(actor) then
+         for _, factionId in ipairs(types.NPC.getFactions(actor)) do
+            if specials.reputation[factionId] then
+               actor:sendEvent('SpecialModifyDisposition', { toward = self.id, modifier = specials.reputation[factionId] })
+               break
+            end
          end
       end
    end
@@ -1063,11 +847,9 @@ local function onUpdate(dt)
       local duration = math.max(10, 60 - 0.5 * willpower)
 
       if phobiaTimeSinceLastTriggerred >= duration then
-
          types.Actor.activeSpells(self):remove('special_phobia')
       end
    else
-
       phobiaTimeSinceCheck = phobiaTimeSinceCheck + dt
       if phobiaTimeSinceCheck < phobiaCheckEvery then return end
       phobiaTimeSinceCheck = 0
@@ -1093,7 +875,7 @@ local function onUpdate(dt)
                         name = types.NPC.record(res.hitObject).name
                      end
                      ui.showMessage(special.name .. ' triggered by ' .. name)
-                     types.Actor.activeSpells(self):add({
+                     types.Actor.activeSpells(self):add {
                         id = 'special_phobia',
                         name = 'Phobia',
                         effects = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26 },
@@ -1102,7 +884,7 @@ local function onUpdate(dt)
                         ignoreReflect = true,
                         stackable = false,
                         temporary = true,
-                     })
+                     }
                   end
                end
             end
@@ -1138,7 +920,6 @@ local function onLoad(data)
    if data.reputation then
       specials.reputation = data.reputation
    end
-
 end
 
 local function checkAndAddSpecial(special)

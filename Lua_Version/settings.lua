@@ -1,12 +1,12 @@
 local I = require('openmw.interfaces')
 
-I.Settings.registerPage({
+I.Settings.registerPage {
    key = 'special',
    l10n = 'special',
    name = 'setting_special_page',
-})
+}
 
-I.Settings.registerGroup({
+I.Settings.registerGroup {
    key = 'Settings_special',
    l10n = 'special',
    name = 'setting_special_group',
@@ -28,4 +28,4 @@ I.Settings.registerGroup({
          default = true,
       },
    },
-})
+}
