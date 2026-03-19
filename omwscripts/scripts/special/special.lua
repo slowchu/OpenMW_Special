@@ -726,7 +726,7 @@ local function isSkillGainMultiplierEnabled()
 end
 
 I.SkillProgression.addSkillUsedHandler(function(_, params)
-   local multiplier = isSkillGainMultiplierEnabled() and 1 or specialsSkillMultiplier
+   local multiplier = isSkillGainMultiplierEnabled() and specialsSkillMultiplier or 1
    params.skillGain = params.skillGain * multiplier
    return true
 end)
@@ -877,6 +877,9 @@ local function createApplyElement()
    }):layout())
    content:add(TextButton:new({
       lines = { 'GO BACK' },
+      backgroundOptions = {
+         color = rgb(0.1, 0, 0),
+      },
       events = {
          focusChange = function() applyElement:update() end,
          mouseClick = function()
@@ -1120,7 +1123,7 @@ end
 
 local function onLoad(data)
    if data.insidesOutsides then
-      insidesOutsides = insidesOutsides
+      insidesOutsides = data.insidesOutsides
    end
    if data.nightlys then
       nightlys = data.nightlys
