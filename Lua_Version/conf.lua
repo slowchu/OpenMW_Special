@@ -18,6 +18,7 @@ function Special:copy()
    local copy = Special:new {
       id = self.id,
       name = self.name,
+      description = self.description,
       group = self.group,
       abilityId = self.abilityId,
       abilityIdAtNight = self.abilityIdAtNight,
