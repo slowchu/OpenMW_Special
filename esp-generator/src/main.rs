@@ -394,7 +394,7 @@ fn main() {
                           ("Mysticism", SkillId2::Mysticism),
                           ("Restoration", SkillId2::Restoration)] {
         plugin.add_skill_ability(format!("Proficient in {name}"), EffectId2::FortifySkill, skill, 20);
-        plugin.add_skill_ability(format!("Inept at {name}"), EffectId2::DamageSkill, skill, 100);    
+        plugin.add_skill_ability(format!("Inept at {name}"), EffectId2::DrainSkill, skill, 100);
     }
 
     plugin.add_base_ability("Shadowborn", EffectId2::Chameleon, 20);
