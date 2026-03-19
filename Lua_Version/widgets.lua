@@ -1,4 +1,4 @@
-local _tl_compat; if (tonumber((_VERSION or ''):match('[%d.]*$')) or 0) < 5.3 then local p, m = pcall(require, 'compat53.module'); if p then _tl_compat = m end end; local assert = _tl_compat and _tl_compat.assert or assert; local ipairs = _tl_compat and _tl_compat.ipairs or ipairs; local math = _tl_compat and _tl_compat.math or math; local table = _tl_compat and _tl_compat.table or table; local async = require('openmw.async')
+local async = require('openmw.async')
 local auxUi = require('openmw_aux.ui')
 local I = require('openmw.interfaces')
 local ui = require('openmw.ui')
@@ -6,7 +6,6 @@ local util = require('openmw.util')
 local _utils = require('scripts.special.utils')
 
 local v2 = util.vector2
-local V2 = util.Vector2
 
 sandColor = I.MWUI.templates.textNormal.props.textColor
 lightSandColor = I.MWUI.templates.textHeader.props.textColor
@@ -35,18 +34,12 @@ templates = {
       props = {
          alpha = 0.8,
          color = sandColor,
-         resource = ui.texture({ path = 'white' }),
+         resource = ui.texture { path = 'white' },
       },
    },
-
    textHeader = calculateTextHeaderTemplate(),
    textNormal = calculateTextNormalTemplate(),
 }
-
-BackgroundOptions = {}
-
-
-
 
 function background(options)
    return {
@@ -55,7 +48,7 @@ function background(options)
          alpha = options.alpha or 0.9,
          color = options.color or util.color.rgb(0, 0, 0),
          relativeSize = v2(1, 1),
-         resource = ui.texture({ path = 'white' }),
+         resource = ui.texture { path = 'white' },
       },
    }
 end
@@ -67,26 +60,17 @@ function borders(thick)
    }
 end
 
-
-
-
-
-
-
-
-
-
 function textLines(options)
-   local content = ui.content({})
+   local content = ui.content {}
    for i, line in ipairs(options.lines) do
-      content:add({
+      content:add {
          name = tostring(i),
          template = templates.textNormal,
          props = {
             text = line,
             textColor = options.color,
          },
-      })
+      }
    end
    return {
       type = ui.TYPE.Flex,
@@ -103,41 +87,16 @@ function textLines(options)
    }
 end
 
-TextButtonEvents = {}
-
-
-
-
-
-
-TextButtonProperties = {}
-
-
-
-
-
-TextButtonOptions = {}
-
-
-
-
-
-
-
 TextButton = {}
-
-
-
-
 
 function TextButton:new(options)
    local self = setmetatable({}, { __index = TextButton })
    self.options = options
    local unfocusedColor = options.normalTextColor or sandColor
-   self.textLines = textLines({
+   self.textLines = textLines {
       color = unfocusedColor,
       lines = options.lines,
-   })
+   }
    return self
 end
 
@@ -149,7 +108,7 @@ function TextButton:changeTextColor(color)
 end
 
 function TextButton:layout()
-   local content = ui.content({})
+   local content = ui.content {}
    if self.options.backgroundOptions ~= nil then
       content:add(background(self.options.backgroundOptions))
    end
@@ -169,36 +128,7 @@ function TextButton:layout()
    }
 end
 
-ScrollbarProperties = {}
-
-
-
-
-ScrollbarEvents = {}
-
-
-
-ScrollbarOptions = {}
-
-
-
-
-
 Scrollbar = {}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 function Scrollbar:new(options)
    local self = setmetatable({}, { __index = Scrollbar })
@@ -238,14 +168,12 @@ function Scrollbar:update()
       return
    end
 
-   self._layout.content = ui.content({})
+   self._layout.content = ui.content {}
 
-
-   self._layout.content:add({
+   self._layout.content:add {
       template = I.MWUI.templates.borders,
       props = { relativeSize = v2(1, 1) },
-   })
-
+   }
 
    self.upButton = {
       template = templates.sandImage,
@@ -261,11 +189,9 @@ function Scrollbar:update()
    }
    self._layout.content:add(self.upButton)
 
-
    self.scroller = { template = templates.sandImage }
    self._layout.content:add(self.scroller)
    self:updateScroller()
-
 
    local downButtonRelativePositionY = self.buttonRelativeSizeY + self.scrollerAreaRelativeSizeY
    self.downButton = {
@@ -310,28 +236,7 @@ function Scrollbar:layout()
    return self._layout
 end
 
-ScrollableTextLinesProperties = {}
-
-
-
-
-
-ScrollableTextLinesEvents = {}
-
-
-
-
-ScrollableTextLinesOptions = {}
-
-
-
-
-
 ScrollableTextLines = {}
-
-
-
-
 
 function ScrollableTextLines:new(options)
    local self = setmetatable({}, { __index = ScrollableTextLines })
@@ -347,11 +252,11 @@ end
 
 function ScrollableTextLines:update()
    if not self.linesFlex then return end
-   local linesFlexContent = ui.content({})
+   local linesFlexContent = ui.content {}
    for i, line in ipairs(self.options.lines) do
       if i >= self.scrollbar.current then
          local isFirst = i == self.scrollbar.current
-         linesFlexContent:add({
+         linesFlexContent:add {
             template = isFirst and templates.textHeader or templates.textNormal,
             events = {
                mouseClick = async:callback(function()
@@ -364,7 +269,7 @@ function ScrollableTextLines:update()
                end),
             },
             props = { text = line },
-         })
+         }
       end
    end
    self.linesFlex.content = linesFlexContent
@@ -378,7 +283,7 @@ function ScrollableTextLines:remove(i)
 end
 
 function ScrollableTextLines:layout()
-   local content = ui.content({})
+   local content = ui.content {}
 
    self.linesFlex = {
       type = ui.TYPE.Flex,
@@ -388,7 +293,7 @@ function ScrollableTextLines:layout()
       },
    }
    content:add(self.linesFlex)
-   self.scrollbar = Scrollbar:new({
+   self.scrollbar = Scrollbar:new {
       size = #self.options.lines,
       events = {
          onChange = function(newCurrent)
@@ -400,7 +305,7 @@ function ScrollableTextLines:layout()
          relativePosition = v2(0.98, 0.01),
          relativeSize = v2(self.options.props.scrollbarRelativeSizeWidth, 0.98),
       },
-   })
+   }
    content:add(self.scrollbar:layout())
 
    self:update()
@@ -411,33 +316,7 @@ function ScrollableTextLines:layout()
    }
 end
 
-
-ScrollableProperties = {}
-
-
-
-
-
-
-ScrollableEvents = {}
-
-
-
-
-
-ScrollableOptions = {}
-
-
-
-
-
 Scrollable = {}
-
-
-
-
-
-
 
 local noOp = function() end
 
@@ -457,11 +336,11 @@ end
 
 function Scrollable:update()
    if not self.linesFlex then return end
-   local linesFlexContent = ui.content({})
+   local linesFlexContent = ui.content {}
    for i, line in ipairs(self.options.lines) do
       if i >= self.scrollbar.current then
-         linesFlexContent:add({
-            content = ui.content({ line }),
+         linesFlexContent:add {
+            content = ui.content { line },
             events = {
                mouseClick = async:callback(function()
                   self.options.events.mouseClick(i)
@@ -474,7 +353,7 @@ function Scrollable:update()
                relativeSize = v2(1, 0),
                size = v2(0, self.options.props.lineSizeY),
             },
-         })
+         }
       end
    end
    self.linesFlex.content = linesFlexContent
@@ -513,7 +392,7 @@ function Scrollable:remove(i)
 end
 
 function Scrollable:layout()
-   local content = ui.content({})
+   local content = ui.content {}
 
    local scrollbarPositionX = 1 - 2 * 0.01 - self.options.props.scrollbarRelativeSizeWidth
    self.linesFlex = {
@@ -525,7 +404,7 @@ function Scrollable:layout()
       },
    }
    content:add(self.linesFlex)
-   self.scrollbar = Scrollbar:new({
+   self.scrollbar = Scrollbar:new {
       size = #self.options.lines,
       events = {
          onChange = function(_) self:updateAndOnChange() end,
@@ -534,7 +413,7 @@ function Scrollable:layout()
          relativePosition = v2(scrollbarPositionX, 0.01),
          relativeSize = v2(self.options.props.scrollbarRelativeSizeWidth, 0.98),
       },
-   })
+   }
    local scrollbarLayout = self.scrollbar:layout()
    scrollbarLayout.name = 'scrollbar'
    content:add(self.scrollbar:layout())
@@ -549,12 +428,6 @@ function Scrollable:layout()
 end
 
 Expandable = {}
-
-
-
-
-
-
 
 function Expandable:new(expandable)
    local self = setmetatable(expandable, { __index = Expandable })
@@ -584,30 +457,7 @@ function flattenExpandables(expandables)
    return layouts
 end
 
-ExpandableScrollableEvents = {}
-
-
-
-
-
-
-
-
-
-ExpandableScrollableOption = {}
-
-
-
-
-
 ScrollableGroups = {}
-
-
-
-
-
-
-
 
 function ScrollableGroups:new(options)
    local self = setmetatable({}, { __index = ScrollableGroups })
@@ -630,36 +480,36 @@ function ScrollableGroups:update()
    local itemsLayouts = {}
    for i, item in ipairs(self._flattenedItems) do
       item.items = item.items or {}
-      local content = ui.content({})
+      local content = ui.content {}
       local paddingSizeX = item.numParents * 0.025
       local expandingSignSizeX = 0.05
-      content:add({
+      content:add {
          props = {
             relativeSize = v2(paddingSizeX, 1),
          },
-      })
+      }
       if #item.items > 0 then
-         content:add({
+         content:add {
             template = templates.textNormal,
             props = {
                autoSize = false,
                relativeSize = v2(expandingSignSizeX, 1),
                text = item.isExpanded and '-' or '+',
             },
-         })
+         }
       else
-         content:add({
+         content:add {
             props = {
                relativeSize = v2(expandingSignSizeX, 1),
             },
-         })
+         }
       end
-      content:add({
-         content = ui.content({ item.layout }),
+      content:add {
+         content = ui.content { item.layout },
          props = {
             relativeSize = v2(1 - paddingSizeX - expandingSignSizeX, 1),
          },
-      })
+      }
       table.insert(itemsLayouts, {
          type = ui.TYPE.Flex,
          content = content,
@@ -708,7 +558,7 @@ function ScrollableGroups:updateAndOnChange()
 end
 
 function ScrollableGroups:layout()
-   self.scrollable = Scrollable:new({
+   self.scrollable = Scrollable:new {
       events = {
          mouseClick = function(i)
             self._flattenedItems[i].isExpanded = not self._flattenedItems[i].isExpanded
@@ -720,20 +570,14 @@ function ScrollableGroups:layout()
          relativeSize = v2(1, 1),
          lineSizeY = self.options.props.lineSizeY,
       },
-   })
+   }
    self._layout = {
-      content = ui.content({ self.scrollable:layout() }),
+      content = ui.content { self.scrollable:layout() },
       props = self.options.props,
    }
    self:update()
    return self._layout
 end
-
-Grouppable = {}
-
-
-
-
 
 function group(grouppables)
    local expandables = {}
@@ -745,12 +589,12 @@ function group(grouppables)
       for i, part in ipairs(grouppable.group) do
          pgroup = pgroup .. '.' .. part
          if not expandablesByGroup[pgroup] then
-            local expandable = Expandable:new({
+            local expandable = Expandable:new {
                layout = {
                   template = templates.textNormal,
                   props = { text = part },
                },
-            })
+            }
             if lastExpandable then
                table.insert(lastExpandable.items, expandable)
             end
