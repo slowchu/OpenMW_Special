@@ -1,4 +1,4 @@
-local _ = require('scripts/special/conf')
+local _ = require('scripts.special.conf')
 
 local specials = {}
 for _, advantage in ipairs(advantages) do
