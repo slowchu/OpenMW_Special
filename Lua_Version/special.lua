@@ -9,13 +9,35 @@ local time = require('openmw_aux.time')
 local types = require('openmw.types')
 local ui = require('openmw.ui')
 local util = require('openmw.util')
-local _conf = require('scripts.special.conf')
-local _widgets = require('scripts.special.widgets')
+local conf = require('scripts.special.conf')
+local widgets = require('scripts.special.widgets')
+local utils = require('scripts.special.utils')
 local _ = require('scripts.special.settings')
 
 local rgb = util.color.rgb
 local v2 = util.vector2
 
+
+local AdvantagesDisadvantages = conf.AdvantagesDisadvantages
+local addSpecial = conf.addSpecial
+local advantages = conf.advantages
+local disadvantages = conf.disadvantages
+local advantagesByAbilityId = conf.advantagesByAbilityId
+local disadvantagesByAbilityId = conf.disadvantagesByAbilityId
+local maxDifficultyPoints = conf.maxDifficultyPoints
+local maxPaddingPoints = conf.maxPaddingPoints
+local maxValidDifficultyPoints = conf.maxValidDifficultyPoints
+
+local templates = widgets.templates
+local background = widgets.background
+local borders = widgets.borders
+local textLines = widgets.textLines
+local TextButton = widgets.TextButton
+local ScrollableTextLines = widgets.ScrollableTextLines
+local ScrollableGroups = widgets.ScrollableGroups
+local group = widgets.group
+
+local lookupLayout = utils.lookupLayout
 local specials = AdvantagesDisadvantages:new()
 local specialsSkillMultiplier = 1
 local phobias = {}
@@ -33,9 +55,9 @@ local createMainElement = nil
 local editElement = nil
 local editElementChangeSelection = nil
 local applyElement = nil
-local reputationElement = nil
 
 local settings = storage.playerSection('Settings_special')
+local appliedMaxHp = 0
 
 local function checkSpellExists(abilityId)
    if (core.magic.spells.records)[abilityId] == nil then
@@ -86,13 +108,6 @@ local function destroyApplyElement()
    if not applyElement then return end
    applyElement:destroy()
    applyElement = nil
-   I.UI.setMode()
-end
-
-local function destroyReputationElement()
-   if not reputationElement then return end
-   reputationElement:destroy()
-   reputationElement = nil
    I.UI.setMode()
 end
 
@@ -262,8 +277,15 @@ local function secondColumn()
    }
 end
 
-local function changeHitPoints(_)
-   ui.showMessage('Changing hit points is not supported yet')
+local function changeHitPoints(delta)
+   local newHp = math.max(-maxPaddingPoints, math.min(maxPaddingPoints, specials.maxHp + delta))
+   if newHp == specials.maxHp then return end
+   specials.maxHp = newHp
+
+   local boxedHitPoints = lookupLayout(mainElement.layout, { 'hitPoints', 'boxedHitPoints', 'flex' })
+   lookupLayout(boxedHitPoints, { '1' }).props.text = tostring(specials.maxHp)
+   updateDifficultyLine()
+   mainElement:update()
 end
 
 local function hitPoint()
@@ -506,28 +528,6 @@ local function editSpecialDisadvantagesButton()
    }):layout()
 end
 
-local function createReputationElement()
-   ui.showMessage('Changing reputation is not yet implemented!')
-   return
-   -- TODO: Reputation editing UI is not yet implemented.
-   -- See the Teal source (special.tl) for the commented-out implementation.
-end
-
-local function editReputationButton()
-   return TextButton:new({
-      lines = { 'EDIT', 'REPUTATION' },
-      backgroundOptions = {},
-      events = {
-         focusChange = function() mainElement:update() end,
-         mouseClick = createReputationElement,
-      },
-      props = {
-         relativePosition = v2(0.75, 0.67),
-         relativeSize = v2(0.25, 0.16),
-      },
-   }):layout()
-end
-
 local function calculateSpecialsSkillMultiplier(cost)
    if cost >= 0 then
       return 1 + (0.3 - 1) / 30 * cost
@@ -560,6 +560,7 @@ local function applySpecials()
 
    print('Applying specials abilities')
    nightlys = {}
+   insidesOutsides = {}
    for _, advantage in ipairs(specials.advantages) do
       if advantage.abilityId then
          types.Actor.spells(self):add(advantage.abilityId)
@@ -587,6 +588,18 @@ local function applySpecials()
       if type(phobiaOf) == "table" then
          table.insert(phobias, disadvantage)
       end
+   end
+
+   local hpDelta = specials.maxHp - appliedMaxHp
+   if hpDelta ~= 0 then
+      local health = types.Actor.stats.dynamic.health(self)
+      if health.current <= 0 then
+         print('Skipping max health update while actor is dead')
+      else
+         health.base = health.base + hpDelta
+         appliedMaxHp = specials.maxHp
+      end
+      print('Applying max health delta ' .. tostring(hpDelta))
    end
 
    specialsSkillMultiplier = calculateSpecialsSkillMultiplier(specials:cost())
@@ -725,7 +738,6 @@ createMainElement = function()
          hitPoint(),
          editSpecialAdvantagesButton(),
          editSpecialDisadvantagesButton(),
-         editReputationButton(),
          exitButton(),
       },
    }
@@ -752,6 +764,7 @@ local function loadPlayerSpecials()
    for _, phobia in ipairs(phobias) do
       table.insert(specials.disadvantages, phobia)
    end
+   specials.maxHp = appliedMaxHp
 end
 
 local function onKeyPress(key)
@@ -762,37 +775,16 @@ local function onKeyPress(key)
       destroyMainElement()
       destroyEditElement()
       destroyApplyElement()
-      destroyReputationElement()
    elseif editElement and key.code == input.KEY.UpArrow then
       editElementChangeSelection(-1)
    elseif editElement and key.code == input.KEY.DownArrow then
       editElementChangeSelection(1)
-   elseif editElement and key.code == input.KEY.Enter then
-      -- TODO: handle Enter key in edit element
    end
 end
 
 local function onMouseWheel(vertical, _)
    if not editElement then return end
    editElementChangeSelection(-vertical)
-end
-
-local applyReputationChangesLastRun = 100000000
-local applyReputationChangesEvery = 5
-local function applyReputationChanges(dt)
-   applyReputationChangesLastRun = applyReputationChangesLastRun + dt
-   if applyReputationChangesLastRun < applyReputationChangesEvery then return end
-   applyReputationChangesLastRun = 0
-   for _, actor in ipairs(nearby.actors) do
-      if types.NPC.objectIsInstance(actor) then
-         for _, factionId in ipairs(types.NPC.getFactions(actor)) do
-            if specials.reputation[factionId] then
-               actor:sendEvent('SpecialModifyDisposition', { toward = self.id, modifier = specials.reputation[factionId] })
-               break
-            end
-         end
-      end
-   end
 end
 
 local function applyNightlys(dt)
@@ -834,7 +826,6 @@ local function applyInsidesOutsides(dt)
 end
 
 local function onUpdate(dt)
-   applyReputationChanges(dt)
    applyNightlys(dt)
    applyInsidesOutsides(dt)
 
@@ -898,17 +889,21 @@ local function onSave()
       insidesOutsides = insidesOutsides,
       nightlys = nightlys,
       phobias = phobias,
-      reputation = specials.reputation,
+      appliedMaxHp = appliedMaxHp,
       specialsSkillMultiplier = specialsSkillMultiplier,
    }
 end
 
 local function onLoad(data)
+   if not data then return end
    if data.insidesOutsides then
       insidesOutsides = data.insidesOutsides
    end
    if data.nightlys then
       nightlys = data.nightlys
+   end
+   if data.appliedMaxHp then
+      appliedMaxHp = data.appliedMaxHp
    end
    if data.specialsSkillMultiplier and data.specialsSkillMultiplier ~= 1 then
       specialsSkillMultiplier = data.specialsSkillMultiplier
@@ -916,9 +911,6 @@ local function onLoad(data)
    end
    if data.phobias then
       phobias = data.phobias
-   end
-   if data.reputation then
-      specials.reputation = data.reputation
    end
 end
 

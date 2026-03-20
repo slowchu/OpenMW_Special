@@ -1,6 +1,4 @@
-local ui = require('openmw.ui')
-
-function lookupLayout(layout, names)
+local function lookupLayout(layout, names)
    local current = layout
    for _, name in ipairs(names) do
       current = current.content[name]
@@ -10,3 +8,7 @@ function lookupLayout(layout, names)
    end
    return current
 end
+
+return {
+   lookupLayout = lookupLayout,
+}

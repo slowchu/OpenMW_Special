@@ -4,4 +4,4 @@ This folder contains a Lua port of the Teal scripts from:
 
 - `omwscripts/scripts/special/*.tl`
 
-The files here are direct Lua translations intended to preserve the exact behavior of the Teal sources so they can be merged into Lua-only mods.
+The files here are a Lua rewrite of the Teal sources, preserving gameplay behavior while using Lua-native module boundaries and maintenance-friendly structure for Lua-only mods.
