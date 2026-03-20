@@ -416,7 +416,7 @@ function Scrollable:layout()
    }
    local scrollbarLayout = self.scrollbar:layout()
    scrollbarLayout.name = 'scrollbar'
-   content:add(self.scrollbar:layout())
+   content:add(scrollbarLayout)
 
    self:update()
 
