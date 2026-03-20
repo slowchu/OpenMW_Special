@@ -58,6 +58,7 @@ local applyElement = nil
 
 local settings = storage.playerSection('Settings_special')
 local appliedMaxHp = 0
+local previousLevel = 0
 
 local function checkSpellExists(abilityId)
    if (core.magic.spells.records)[abilityId] == nil then
@@ -590,17 +591,8 @@ local function applySpecials()
       end
    end
 
-   local hpDelta = specials.maxHp - appliedMaxHp
-   if hpDelta ~= 0 then
-      local health = types.Actor.stats.dynamic.health(self)
-      if health.current <= 0 then
-         print('Skipping max health update while actor is dead')
-      else
-         health.base = health.base + hpDelta
-         appliedMaxHp = specials.maxHp
-      end
-      print('Applying max health delta ' .. tostring(hpDelta))
-   end
+   appliedMaxHp = specials.maxHp
+   print('Applying max hit points per level modifier ' .. tostring(appliedMaxHp))
 
    specialsSkillMultiplier = calculateSpecialsSkillMultiplier(specials:cost())
    print('Applying specials skill multiplier ' .. tostring(specialsSkillMultiplier))
@@ -825,7 +817,55 @@ local function applyInsidesOutsides(dt)
    end
 end
 
+local function getCurrentLevel()
+   return types.Actor.stats.level(self).current
+end
+
+local function rollHealthGain()
+   local minRoll = 4
+   local maxRoll = math.max(minRoll, 12 + appliedMaxHp)
+   local endurance = types.Actor.stats.attributes.endurance(self).modified
+   local enduranceModifier = math.floor((endurance - 50) / 10)
+   local roll = math.random(minRoll, maxRoll)
+   return math.max(1, math.min(maxRoll, roll + enduranceModifier))
+end
+
+local function applyLevelUpHealthBonus(levelsGained)
+   if appliedMaxHp == 0 or levelsGained <= 0 then return end
+
+   local health = types.Actor.stats.dynamic.health(self)
+   if health.current <= 0 then
+      print('Skipping level-up max health updates while actor is dead')
+      return
+   end
+
+   local totalBonus = 0
+   for _ = 1, levelsGained do
+      totalBonus = totalBonus + rollHealthGain()
+   end
+
+   health.base = health.base + totalBonus
+   health.current = math.min(health.base, health.current + totalBonus)
+   print('Applied max hit points per level bonus ' .. tostring(totalBonus) .. ' for ' .. tostring(levelsGained) .. ' level(s)')
+end
+
+local function processLevelChange(level)
+   if level <= previousLevel then return end
+
+   local levelsGained = level - previousLevel
+   previousLevel = level
+   applyLevelUpHealthBonus(levelsGained)
+end
+
+if I.LevelUp and I.LevelUp.addLevelUpHandler then
+   I.LevelUp.addLevelUpHandler(function()
+      processLevelChange(getCurrentLevel())
+      return true
+   end)
+end
+
 local function onUpdate(dt)
+   processLevelChange(getCurrentLevel())
    applyNightlys(dt)
    applyInsidesOutsides(dt)
 
@@ -890,12 +930,16 @@ local function onSave()
       nightlys = nightlys,
       phobias = phobias,
       appliedMaxHp = appliedMaxHp,
+      previousLevel = previousLevel,
       specialsSkillMultiplier = specialsSkillMultiplier,
    }
 end
 
 local function onLoad(data)
-   if not data then return end
+   if not data then
+      previousLevel = getCurrentLevel()
+      return
+   end
    if data.insidesOutsides then
       insidesOutsides = data.insidesOutsides
    end
@@ -905,12 +949,18 @@ local function onLoad(data)
    if data.appliedMaxHp then
       appliedMaxHp = data.appliedMaxHp
    end
+   if data.previousLevel then
+      previousLevel = data.previousLevel
+   end
    if data.specialsSkillMultiplier and data.specialsSkillMultiplier ~= 1 then
       specialsSkillMultiplier = data.specialsSkillMultiplier
       print('Applying specials skill multiplier ' .. tostring(specialsSkillMultiplier))
    end
    if data.phobias then
       phobias = data.phobias
+   end
+   if previousLevel == 0 then
+      previousLevel = getCurrentLevel()
    end
 end
 
