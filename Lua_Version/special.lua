@@ -804,7 +804,7 @@ local function onUpdate(dt)
    applyNightlys(dt)
    applyInsidesOutsides(dt)
 
-   if not phobias then return end
+   if next(phobias) == nil then return end
 
    if types.Actor.activeSpells(self):isSpellActive('special_phobia') then
       phobiaTimeSinceLastTriggerred = phobiaTimeSinceLastTriggerred + dt
