@@ -3,12 +3,12 @@ local auxUi = require('openmw_aux.ui')
 local I = require('openmw.interfaces')
 local ui = require('openmw.ui')
 local util = require('openmw.util')
-local _utils = require('scripts.special.utils')
+local utils = require('scripts.special.utils')
 
 local v2 = util.vector2
 
-sandColor = I.MWUI.templates.textNormal.props.textColor
-lightSandColor = I.MWUI.templates.textHeader.props.textColor
+local sandColor = I.MWUI.templates.textNormal.props.textColor
+local lightSandColor = I.MWUI.templates.textHeader.props.textColor
 
 local function calculateTextSize()
    local screenSize = ui.layers[ui.layers.indexOf('Windows')].size
@@ -28,7 +28,7 @@ local function calculateTextHeaderTemplate()
    return textTemplate
 end
 
-templates = {
+local templates = {
    sandImage = {
       type = ui.TYPE.Image,
       props = {
@@ -41,7 +41,7 @@ templates = {
    textNormal = calculateTextNormalTemplate(),
 }
 
-function background(options)
+local function background(options)
    return {
       type = ui.TYPE.Image,
       props = {
@@ -53,14 +53,14 @@ function background(options)
    }
 end
 
-function borders(thick)
+local function borders(thick)
    return {
       template = thick and I.MWUI.templates.bordersThick or I.MWUI.templates.borders,
       props = { relativeSize = v2(1, 1) },
    }
 end
 
-function textLines(options)
+local function textLines(options)
    local content = ui.content {}
    for i, line in ipairs(options.lines) do
       content:add {
@@ -87,7 +87,7 @@ function textLines(options)
    }
 end
 
-TextButton = {}
+local TextButton = {}
 
 function TextButton:new(options)
    local self = setmetatable({}, { __index = TextButton })
@@ -102,7 +102,7 @@ end
 
 function TextButton:changeTextColor(color)
    for i, _ in ipairs(self.options.lines) do
-      lookupLayout(self.textLines, { tostring(i) }).props.textColor = color
+      utils.lookupLayout(self.textLines, { tostring(i) }).props.textColor = color
    end
    if self.options.events.focusChange then self.options.events.focusChange() end
 end
@@ -128,7 +128,7 @@ function TextButton:layout()
    }
 end
 
-Scrollbar = {}
+local Scrollbar = {}
 
 function Scrollbar:new(options)
    local self = setmetatable({}, { __index = Scrollbar })
@@ -236,7 +236,7 @@ function Scrollbar:layout()
    return self._layout
 end
 
-ScrollableTextLines = {}
+local ScrollableTextLines = {}
 
 function ScrollableTextLines:new(options)
    local self = setmetatable({}, { __index = ScrollableTextLines })
@@ -316,7 +316,7 @@ function ScrollableTextLines:layout()
    }
 end
 
-Scrollable = {}
+local Scrollable = {}
 
 local noOp = function() end
 
@@ -427,7 +427,7 @@ function Scrollable:layout()
    return self._layout
 end
 
-Expandable = {}
+local Expandable = {}
 
 function Expandable:new(expandable)
    local self = setmetatable(expandable, { __index = Expandable })
@@ -437,7 +437,7 @@ function Expandable:new(expandable)
    return self
 end
 
-function flattenExpandables(expandables)
+local function flattenExpandables(expandables)
    local layouts = {}
    local toVisit = {}
    for i = 0, #expandables - 1 do
@@ -457,7 +457,7 @@ function flattenExpandables(expandables)
    return layouts
 end
 
-ScrollableGroups = {}
+local ScrollableGroups = {}
 
 function ScrollableGroups:new(options)
    local self = setmetatable({}, { __index = ScrollableGroups })
@@ -579,7 +579,7 @@ function ScrollableGroups:layout()
    return self._layout
 end
 
-function group(grouppables)
+local function group(grouppables)
    local expandables = {}
    local expandablesByGroup = {}
    for _, grouppable in ipairs(grouppables) do
@@ -621,3 +621,21 @@ function group(grouppables)
    end
    return expandables
 end
+
+
+return {
+   templates = templates,
+   sandColor = sandColor,
+   lightSandColor = lightSandColor,
+   background = background,
+   borders = borders,
+   textLines = textLines,
+   TextButton = TextButton,
+   Scrollbar = Scrollbar,
+   ScrollableTextLines = ScrollableTextLines,
+   Scrollable = Scrollable,
+   Expandable = Expandable,
+   ScrollableGroups = ScrollableGroups,
+   flattenExpandables = flattenExpandables,
+   group = group,
+}

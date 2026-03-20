@@ -1,10 +1,10 @@
-local _ = require('scripts.special.conf')
+local conf = require('scripts.special.conf')
 
 local specials = {}
-for _, advantage in ipairs(advantages) do
+for _, advantage in ipairs(conf.advantages) do
    table.insert(specials, advantage)
 end
-for _, disadvantage in ipairs(disadvantages) do
+for _, disadvantage in ipairs(conf.disadvantages) do
    table.insert(specials, disadvantage)
 end
 

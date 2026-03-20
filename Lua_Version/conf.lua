@@ -1,12 +1,10 @@
 -- Configuration for Special Advantages/Disadvantages mod
--- Globals are used intentionally for cross-module access (matching Teal's `global` keyword)
+local maxDifficultyPoints = 50
+local maxPaddingPoints = 20
+local maxValidDifficultyPoints = maxDifficultyPoints - maxPaddingPoints
+local reputationCost = 2
 
-maxDifficultyPoints = 50
-maxPaddingPoints = 20
-maxValidDifficultyPoints = maxDifficultyPoints - maxPaddingPoints
-reputationCost = 2
-
-Special = {}
+local Special = {}
 
 function Special:new(special)
    assert(special)
@@ -36,14 +34,14 @@ function Special:copy()
    return copy
 end
 
-advantages = {}
-advantagesById = {}
-advantagesByAbilityId = {}
-disadvantages = {}
-disadvantagesById = {}
-disadvantagesByAbilityId = {}
+local advantages = {}
+local advantagesById = {}
+local advantagesByAbilityId = {}
+local disadvantages = {}
+local disadvantagesById = {}
+local disadvantagesByAbilityId = {}
 
-function addSpecial(special)
+local function addSpecial(special)
    if special.cost >= 0 then
       table.insert(advantages, special)
       advantagesById[special.id] = special
@@ -496,7 +494,7 @@ addSpecial {
    cost = 0,
 }
 
-AdvantagesDisadvantages = {}
+local AdvantagesDisadvantages = {}
 
 function AdvantagesDisadvantages:new()
    local self = setmetatable({}, { __index = AdvantagesDisadvantages })
@@ -571,3 +569,19 @@ function AdvantagesDisadvantages:availableDisadvantages()
    end
    return availableDisadvantages
 end
+
+return {
+   maxDifficultyPoints = maxDifficultyPoints,
+   maxPaddingPoints = maxPaddingPoints,
+   maxValidDifficultyPoints = maxValidDifficultyPoints,
+   reputationCost = reputationCost,
+   Special = Special,
+   addSpecial = addSpecial,
+   advantages = advantages,
+   advantagesById = advantagesById,
+   advantagesByAbilityId = advantagesByAbilityId,
+   disadvantages = disadvantages,
+   disadvantagesById = disadvantagesById,
+   disadvantagesByAbilityId = disadvantagesByAbilityId,
+   AdvantagesDisadvantages = AdvantagesDisadvantages,
+}

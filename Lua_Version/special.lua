@@ -9,13 +9,35 @@ local time = require('openmw_aux.time')
 local types = require('openmw.types')
 local ui = require('openmw.ui')
 local util = require('openmw.util')
-local _conf = require('scripts.special.conf')
-local _widgets = require('scripts.special.widgets')
+local conf = require('scripts.special.conf')
+local widgets = require('scripts.special.widgets')
+local utils = require('scripts.special.utils')
 local _ = require('scripts.special.settings')
 
 local rgb = util.color.rgb
 local v2 = util.vector2
 
+
+local AdvantagesDisadvantages = conf.AdvantagesDisadvantages
+local addSpecial = conf.addSpecial
+local advantages = conf.advantages
+local disadvantages = conf.disadvantages
+local advantagesByAbilityId = conf.advantagesByAbilityId
+local disadvantagesByAbilityId = conf.disadvantagesByAbilityId
+local maxDifficultyPoints = conf.maxDifficultyPoints
+local maxPaddingPoints = conf.maxPaddingPoints
+local maxValidDifficultyPoints = conf.maxValidDifficultyPoints
+
+local templates = widgets.templates
+local background = widgets.background
+local borders = widgets.borders
+local textLines = widgets.textLines
+local TextButton = widgets.TextButton
+local ScrollableTextLines = widgets.ScrollableTextLines
+local ScrollableGroups = widgets.ScrollableGroups
+local group = widgets.group
+
+local lookupLayout = utils.lookupLayout
 local specials = AdvantagesDisadvantages:new()
 local specialsSkillMultiplier = 1
 local phobias = {}
@@ -571,9 +593,12 @@ local function applySpecials()
    local hpDelta = specials.maxHp - appliedMaxHp
    if hpDelta ~= 0 then
       local health = types.Actor.stats.dynamic.health(self)
-      health.base = health.base + hpDelta
-      health.current = math.max(1, health.current + hpDelta)
-      appliedMaxHp = specials.maxHp
+      if health.current <= 0 then
+         print('Skipping max health update while actor is dead')
+      else
+         health.base = health.base + hpDelta
+         appliedMaxHp = specials.maxHp
+      end
       print('Applying max health delta ' .. tostring(hpDelta))
    end
 
@@ -870,6 +895,7 @@ local function onSave()
 end
 
 local function onLoad(data)
+   if not data then return end
    if data.insidesOutsides then
       insidesOutsides = data.insidesOutsides
    end
