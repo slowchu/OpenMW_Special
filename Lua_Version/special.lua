@@ -58,7 +58,10 @@ local applyElement = nil
 
 local settings = storage.playerSection('Settings_special')
 local appliedMaxHp = 0
-local previousLevel = 0
+local previousLevel = nil
+local hpPerLevel = {}
+local levelCheckEvery = 1
+local levelTimeSinceCheck = 10000000
 
 local function checkSpellExists(abilityId)
    if (core.magic.spells.records)[abilityId] == nil then
@@ -822,16 +825,17 @@ local function getCurrentLevel()
 end
 
 local function rollHealthGain()
-   local minRoll = 4
-   local maxRoll = math.max(minRoll, 12 + appliedMaxHp)
+   local maxRoll = math.max(1, 8 + appliedMaxHp)
+   local minRoll = maxRoll / 2
+   local rnd = math.random()
    local endurance = types.Actor.stats.attributes.endurance(self).modified
    local enduranceModifier = math.floor((endurance - 50) / 10)
-   local roll = math.random(minRoll, maxRoll)
-   return math.max(1, math.min(maxRoll, roll + enduranceModifier))
+   local roll = minRoll + (maxRoll - minRoll) * rnd
+   return math.max(1, roll + enduranceModifier)
 end
 
-local function applyLevelUpHealthBonus(levelsGained)
-   if appliedMaxHp == 0 or levelsGained <= 0 then return end
+local function applyLevelUpHealthBonus(level, levelsGained)
+   if levelsGained <= 0 then return end
 
    local health = types.Actor.stats.dynamic.health(self)
    if health.current <= 0 then
@@ -840,32 +844,38 @@ local function applyLevelUpHealthBonus(levelsGained)
    end
 
    local totalBonus = 0
-   for _ = 1, levelsGained do
-      totalBonus = totalBonus + rollHealthGain()
+   local firstLevel = level - levelsGained + 1
+   for currLevel = firstLevel, level do
+      if hpPerLevel[currLevel] == nil then
+         hpPerLevel[currLevel] = rollHealthGain()
+      end
+      totalBonus = totalBonus + hpPerLevel[currLevel]
    end
 
    health.base = health.base + totalBonus
    health.current = math.min(health.base, health.current + totalBonus)
-   print('Applied max hit points per level bonus ' .. tostring(totalBonus) .. ' for ' .. tostring(levelsGained) .. ' level(s)')
+   print('Applied max hit points per level bonus ' .. tostring(totalBonus) .. ' for levels ' ..
+      tostring(firstLevel) .. '-' .. tostring(level))
 end
 
 local function processLevelChange(level)
+   if previousLevel == nil then
+      previousLevel = level
+      return
+   end
    if level <= previousLevel then return end
 
    local levelsGained = level - previousLevel
    previousLevel = level
-   applyLevelUpHealthBonus(levelsGained)
-end
-
-if I.LevelUp and I.LevelUp.addLevelUpHandler then
-   I.LevelUp.addLevelUpHandler(function()
-      processLevelChange(getCurrentLevel())
-      return true
-   end)
+   applyLevelUpHealthBonus(level, levelsGained)
 end
 
 local function onUpdate(dt)
-   processLevelChange(getCurrentLevel())
+   levelTimeSinceCheck = levelTimeSinceCheck + dt
+   if levelTimeSinceCheck >= levelCheckEvery then
+      levelTimeSinceCheck = 0
+      processLevelChange(getCurrentLevel())
+   end
    applyNightlys(dt)
    applyInsidesOutsides(dt)
 
@@ -930,6 +940,7 @@ local function onSave()
       nightlys = nightlys,
       phobias = phobias,
       appliedMaxHp = appliedMaxHp,
+      hpPerLevel = hpPerLevel,
       previousLevel = previousLevel,
       specialsSkillMultiplier = specialsSkillMultiplier,
    }
@@ -948,6 +959,9 @@ local function onLoad(data)
    end
    if data.appliedMaxHp then
       appliedMaxHp = data.appliedMaxHp
+   end
+   if data.hpPerLevel then
+      hpPerLevel = data.hpPerLevel
    end
    if data.previousLevel then
       previousLevel = data.previousLevel
