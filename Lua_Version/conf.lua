@@ -2,6 +2,7 @@
 local maxDifficultyPoints = 50
 local maxPaddingPoints = 20
 local maxValidDifficultyPoints = maxDifficultyPoints - maxPaddingPoints
+local maxHpPerLevelRange = 22
 local reputationCost = 2
 
 local Special = {}
@@ -574,6 +575,7 @@ return {
    maxDifficultyPoints = maxDifficultyPoints,
    maxPaddingPoints = maxPaddingPoints,
    maxValidDifficultyPoints = maxValidDifficultyPoints,
+   maxHpPerLevelRange = maxHpPerLevelRange,
    reputationCost = reputationCost,
    Special = Special,
    addSpecial = addSpecial,
