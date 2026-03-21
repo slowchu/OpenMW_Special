@@ -944,7 +944,10 @@ local function onSave()
 end
 
 local function onLoad(data)
-   if not data then return end
+   if not data then
+      previousLevel = getCurrentLevel()
+      return
+   end
    if data.insidesOutsides then
       insidesOutsides = data.insidesOutsides
    end
@@ -966,6 +969,9 @@ local function onLoad(data)
    end
    if data.phobias then
       phobias = data.phobias
+   end
+   if previousLevel == 0 then
+      previousLevel = getCurrentLevel()
    end
 end
 
