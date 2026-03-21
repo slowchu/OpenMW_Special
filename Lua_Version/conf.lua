@@ -1,6 +1,6 @@
 -- Configuration for Special Advantages/Disadvantages mod
 local maxDifficultyPoints = 50
-local maxPaddingPoints = 20
+local maxPaddingPoints = 30
 local maxValidDifficultyPoints = maxDifficultyPoints - maxPaddingPoints
 local maxHpPerLevelRange = 30
 local reputationCost = 2
