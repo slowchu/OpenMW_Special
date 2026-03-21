@@ -25,8 +25,8 @@ local disadvantages = conf.disadvantages
 local advantagesByAbilityId = conf.advantagesByAbilityId
 local disadvantagesByAbilityId = conf.disadvantagesByAbilityId
 local maxDifficultyPoints = conf.maxDifficultyPoints
-local maxPaddingPoints = conf.maxPaddingPoints
 local maxValidDifficultyPoints = conf.maxValidDifficultyPoints
+local maxHpPerLevelRange = conf.maxHpPerLevelRange
 
 local templates = widgets.templates
 local background = widgets.background
@@ -282,7 +282,7 @@ local function secondColumn()
 end
 
 local function changeHitPoints(delta)
-   local newHp = math.max(-maxPaddingPoints, math.min(maxPaddingPoints, specials.maxHp + delta))
+   local newHp = math.max(-maxHpPerLevelRange, math.min(maxHpPerLevelRange, specials.maxHp + delta))
    if newHp == specials.maxHp then return end
    specials.maxHp = newHp
 
@@ -825,13 +825,13 @@ local function getCurrentLevel()
 end
 
 local function rollHealthGain()
-   local maxRoll = math.max(1, 8 + appliedMaxHp)
-   local minRoll = maxRoll / 2
-   local rnd = math.random()
+   local hpPerLevel = 8 + appliedMaxHp
+   local minRoll = math.max(1, math.floor(hpPerLevel / 2))
+   local maxRoll = math.max(minRoll, hpPerLevel)
    local endurance = types.Actor.stats.attributes.endurance(self).modified
-   local enduranceModifier = math.floor((endurance - 50) / 10)
-   local roll = minRoll + (maxRoll - minRoll) * rnd
-   return math.max(1, roll + enduranceModifier)
+   local enduranceBonus = math.floor((endurance - 50) / 10)
+   local roll = math.random(minRoll, maxRoll)
+   return math.max(1, roll + enduranceBonus)
 end
 
 local function applyLevelUpHealthBonus(level, levelsGained)
