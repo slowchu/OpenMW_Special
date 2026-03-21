@@ -282,7 +282,7 @@ local function secondColumn()
 end
 
 local function changeHitPoints(delta)
-   local newHp = math.max(-maxHpPerLevelRange, math.min(maxHpPerLevelRange, specials.maxHp + delta))
+   local newHp = math.max(0, math.min(maxHpPerLevelRange, specials.maxHp + delta))
    if newHp == specials.maxHp then return end
    specials.maxHp = newHp
 
