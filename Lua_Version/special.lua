@@ -828,10 +828,7 @@ local function rollHealthGain()
    local hpPerLevel = 8 + appliedMaxHp
    local minRoll = math.max(1, math.floor(hpPerLevel / 2))
    local maxRoll = math.max(minRoll, hpPerLevel)
-   local endurance = types.Actor.stats.attributes.endurance(self).modified
-   local enduranceBonus = math.floor((endurance - 50) / 10)
-   local roll = math.random(minRoll, maxRoll)
-   return math.max(1, roll + enduranceBonus)
+   return math.random(minRoll, maxRoll)
 end
 
 local function applyLevelUpHealthBonus(level, levelsGained)
